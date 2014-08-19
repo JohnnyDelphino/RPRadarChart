@@ -76,6 +76,17 @@
         dotColor = [UIColor redColor];
         fillColor = [UIColor colorWithRed:1 green:0 blue:0 alpha:0.2];
         [self addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleSingleTap:)]];
+        
+        _smallFont = [UIFont fontWithName:@"HelveticaNeue-Light" size:11];
+        _normalFont = [UIFont fontWithName:@"HelveticaNeue-Light" size:13];
+        _attributeLabelColor = [UIColor lightGrayColor];
+        _numberColor = [UIColor blackColor];
+        _indexLineColor =  [UIColor colorWithWhite:0.8 alpha:1];
+        _indexTextColor = _indexLineColor;
+        _baseLineColor = [UIColor darkGrayColor];
+        _overLimitIndicatorColor = _numberColor;
+        _underLimitIndicatorColor = _numberColor;
+        _refLineColor = [UIColor redColor];
     }
     return self;
 }
@@ -341,11 +352,23 @@ static double colorDistance(RGB e1, RGB e2)
         CGContextSetFillColorWithColor(cx, dtColor.CGColor);
         CGContextFillEllipseInRect(cx, CGRectMake(x-dotRadius, y-dotRadius, dotRadius*2, dotRadius*2));
         if (showValues) {
-            NSString *str = [NSString stringWithFormat:@"%1.0f", orgValue];
+            NSString *str = [NSString stringWithFormat:@"%.1f", orgValue];
             x += 5;
-            y -= 7;     
-            CGContextSetFillColorWithColor(cx, [UIColor blackColor].CGColor);
-            [str drawAtPoint:CGPointMake(x, y) withFont:[UIFont fontWithName:@"Helvetica-Bold" size:12]];
+            y -= 7;
+            /// Respect Over- and Under-Limt if set
+            if(_limitValue!=nil){
+                if(orgValue<_limitValue.floatValue){
+                    CGContextSetFillColorWithColor(cx, _underLimitIndicatorColor.CGColor);
+                    [str drawAtPoint:CGPointMake(x, y) withFont:_normalFont];
+                }
+                else{
+                    CGContextSetFillColorWithColor(cx, _overLimitIndicatorColor.CGColor);
+                    [str drawAtPoint:CGPointMake(x, y) withFont:_normalFont];
+                }
+            }else{
+                CGContextSetFillColorWithColor(cx, _numberColor.CGColor);
+                [str drawAtPoint:CGPointMake(x, y) withFont:_normalFont];
+            }
         }
         mi++;
     }    
@@ -364,8 +387,13 @@ static double colorDistance(RGB e1, RGB e2)
     
     //Index Lines
     if (drawGuideLines) {
-        CGContextSetStrokeColorWithColor(cx, [UIColor colorWithWhite:0.8 alpha:1].CGColor);
+//        CGContextSetStrokeColorWithColor(cx,_indexLineColor.CGColor);
         for (int j = 0; j <= guideLineSteps; j++) {
+            CGContextSetStrokeColorWithColor(cx,_indexLineColor.CGColor);
+            if((_refLineIndex!=nil)&&(_refLineIndex.intValue==j)){
+                CGContextSetStrokeColorWithColor(cx,_refLineColor.CGColor);
+            }
+            
              float cur = j*spcr;
             CGContextStrokeEllipseInRect(cx, CGRectMake(-cur, -cur, cur*2, cur*2));
         }
@@ -373,8 +401,9 @@ static double colorDistance(RGB e1, RGB e2)
     }
     
     //Base lines
-    CGContextSetStrokeColorWithColor(cx, [UIColor darkGrayColor].CGColor);
+//    CGContextSetStrokeColorWithColor(cx, _baseLineColor.CGColor);
     for (int i = 0; i < numberOfSpokes; i++) {
+        CGContextSetStrokeColorWithColor(cx, _baseLineColor.CGColor);
         float a = (mvr * i) - M_PI_2;
         float x = maxSize * cos(a);
         float y = maxSize * sin(a);
@@ -384,12 +413,12 @@ static double colorDistance(RGB e1, RGB e2)
         CGContextStrokePath(cx);
         
         NSString *tx = [dataSource radarChart:self titleForSpoke:i];
-        CGSize s =[tx sizeWithFont:[UIFont fontWithName:@"Helvetica-Bold" size:11]];
+        CGSize s =[tx sizeWithFont:_smallFont];
         x -= s.width/2;
         x += 5;
         y += (y>0) ? 10 : -20;        
-        CGContextSetFillColorWithColor(cx, [UIColor darkGrayColor].CGColor);
-        [tx drawAtPoint:CGPointMake(x, y) withFont: [UIFont fontWithName:@"Helvetica-Bold" size:11]];
+        CGContextSetFillColorWithColor(cx, _attributeLabelColor.CGColor);
+        [tx drawAtPoint:CGPointMake(x, y) withFont: _smallFont];
     }
     
     //Index Texts
@@ -397,11 +426,11 @@ static double colorDistance(RGB e1, RGB e2)
         for(float i = spcr; i <= maxSize; i+=spcr)
         {        
             NSString *str = [NSString stringWithFormat:@"%1.0f",( i * maxValue) / maxSize];
-            CGSize s = [str sizeWithFont:[UIFont fontWithName:@"Helvetica" size:12]];
+            CGSize s = [str sizeWithFont:_normalFont];
             float x = i * cos(M_PI_2) + 5 + s.width;
             float y = i * sin(M_PI_2) + 5;
-            CGContextSetFillColorWithColor(cx, [UIColor darkGrayColor].CGColor);
-            [str drawAtPoint:CGPointMake(- x, - y) withFont: [UIFont fontWithName:@"Helvetica" size:11]];
+            CGContextSetFillColorWithColor(cx, _indexTextColor.CGColor);
+            [str drawAtPoint:CGPointMake(- x, - y) withFont: _smallFont];
         }
     }
     CGContextMoveToPoint(cx, 0, 0);

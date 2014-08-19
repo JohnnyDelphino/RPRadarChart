@@ -107,4 +107,18 @@
 @property (nonatomic, assign) id<RPRadarChartDataSource> dataSource;
 @property (nonatomic, assign) id<RPRadarChartDelegate> delegate;
 
+///custom added properties:
+@property (nonatomic, retain) UIFont *smallFont;
+@property (nonatomic, retain) UIFont *normalFont;
+@property (nonatomic, retain) UIColor *attributeLabelColor;
+@property (nonatomic, retain) UIColor *numberColor;
+@property (nonatomic, retain) UIColor *indexLineColor;
+@property (nonatomic, retain) UIColor *indexTextColor;
+@property (nonatomic, retain) UIColor *baseLineColor;
+@property (nonatomic, retain) NSNumber *limitValue;
+@property (nonatomic, retain) UIColor *overLimitIndicatorColor;
+@property (nonatomic, retain) UIColor *underLimitIndicatorColor;
+@property (nonatomic, retain) NSNumber *refLineIndex;
+@property (nonatomic, retain) UIColor *refLineColor;
+
 @end
